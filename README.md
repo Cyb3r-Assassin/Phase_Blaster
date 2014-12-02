@@ -1,5 +1,5 @@
 ##Phase_Blaster
-####Managed recognises for professional pentesters
+####Managed recognize for professional pentesters
 =============
 
 **About**

@@ -12,18 +12,19 @@ single()
 cid()
 {
   ip=${ips:0:-3}
-  [[ ! -d nmap/$ip ]] && mkdir nmap nmap/$ip || echo "output dir already exists. We will be outputing into it, I hope this is ok"
+  [[ ! -d nmap/$ip ]] && mkdir nmap/$ip || echo "output dir already exists. We will be outputing into it, I hope this is ok"
   nmap -sP $ips | grep -i report | awk -F"for" '{ print $2 }' | cut -d' ' -f2 > nmap/${ip}/hosts
 
   while read host
   do
     [[ ! -e exclude ]] && touch exclude #prevent the following line from returning bits
     if [[ -z $(grep $host exclude) ]]; then #Is this ip in our range off limits?
-      nmap -T4 -O -A -v -oA nmap/$ip $host > nmap/${ip}/$host
+      nmap -A -oA nmap/$ip $host > nmap/${ip}/$host
     fi
   done < nmap/${ip}/hosts
 }
 
+[[ ! -d nmap ]] && mkdir nmap
 if [[ -z $1 || $1 == "--help" || $1 == "-h" ]]; then
   echo "useage is Command [file]/[CID]"
   echo "To use [file] place all ip ranges to be scanned in a text file named \"ips\" seperated by line breaks"

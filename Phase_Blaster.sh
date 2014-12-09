@@ -13,7 +13,7 @@ cid()
 {
   ip=${ips:0:-3}
   [[ ! -d nmap/$ip ]] && mkdir nmap/$ip || echo "output dir already exists. We will be outputing into it, I hope this is ok"
-  nmap -sP $ips | grep -i report | awk -F"for" '{ print $2 }' | cut -d' ' -f2 > nmap/${ip}/hosts
+  nmap -sP $ips | grep -i report | awk -F"for" '{ print $2 }' | cut -d' ' -f2 >> nmap/${ip}/hosts
 
   while read host
   do

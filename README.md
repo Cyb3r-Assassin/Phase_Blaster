@@ -18,22 +18,22 @@ application_dir\nmap\host_cid\host_cid.xml
 
 application_dir\nmap\host_cid\ip "one file per ip"
 
-**USEAGE:*8
+**USEAGE:**
 
-Create 2 files in the same directory you have Phase_blaster.sh residing in, one named "ips" the other "exclude". Place all your ip ranges separated via line breaks into the ips folders. Any ips you need excluded from the scans in the exclude file in the same manner.
+Create 2 files in the same directory you have Phase_blaster.sh residing in, one named "ips" the other "exclude". Place all of your ip ranges separated via line breaks into the ips file. Any ip's you need excluded from the scans in the exclude file in the same manner.
 
 **call phase_blaster as follows**
 
-sudo ./Phase_Blaster file
+sudo ./Phase_Blaster.sh file
 
 **Phase_blaster also allows individual ip entries at any point and adds them into the directory structure and produces a new msf ready xml file.**
 
 if you need to run just one new entry do so as
 
-sudo ./Phase_Blaster 0.0.0.0/24
+sudo ./Phase_Blaster.sh 0.0.0.0/24
 
 or
 
-sudo ./Phase_Blaster 0.0.0.0
+sudo ./Phase_Blaster.sh 0.0.0.0
 
 Happy Hacking!

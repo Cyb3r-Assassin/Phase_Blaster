@@ -1,5 +1,5 @@
 ##Phase_Blaster
-####Managed recognize for professional pentesters
+####Managed recognize scanning for professional pentesters
 =============
 
 **About**

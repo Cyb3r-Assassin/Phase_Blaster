@@ -6,7 +6,7 @@ fi
 
 single()
 {
-  nmap -sV -T4 -O -F --version-light $ips > nmap/$ips
+  nmap -sV -T4 -O -F --version-light $ips >> nmap/$ips
 }
 
 cid()
@@ -19,7 +19,7 @@ cid()
   do
     [[ ! -e exclude ]] && touch exclude #prevent the following line from returning bits
     if [[ -z $(grep $host exclude) ]]; then #Is this ip in our range off limits?
-      nmap -A -oA nmap/$ip $host > nmap/${ip}/$host
+      nmap -A -oA nmap/$ip $host >> nmap/${ip}/$host
     fi
   done < nmap/${ip}/hosts
 }

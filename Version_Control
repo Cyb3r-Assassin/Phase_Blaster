@@ -1,3 +1,4 @@
+.5 Fixed msf output for CID compliant entries. Added a better organization to .xml file placement for msf input. Greatly improved follow along functionality during scanning progress. Added output host file for easy Nessus implementation. Added a class alteration script.
 .4 fixed typos
 .3 other bug fix "msf output file"
 .2 Bug fix "Directory enumeration bug"

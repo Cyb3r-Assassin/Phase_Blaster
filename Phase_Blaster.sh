@@ -4,7 +4,7 @@ if [[ $(id -u) != 0 ]]; then # Verify we are root if not exit
    exit 1
 fi
 
-#trap fixallthethings INT HUP;
+trap fixallthethings INT HUP;
 
 BtoC()
 {

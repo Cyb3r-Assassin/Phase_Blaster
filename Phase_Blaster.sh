@@ -1,21 +1,11 @@
 #!/bin/bash
+
 if [[ $(id -u) != 0 ]]; then # Verify we are root if not exit
    echo "Please Run This Script As Root or With Sudo!" 1>&2
    exit 1
 fi
 
 trap fixallthethings INT HUP;
-
-BtoC()
-{
-  START=0
-  END=255
-  for (( i=$START; i <= $END ; i++)); do
-    if [[ $(expr length $i) -lt 255 ]]; then
-      echo "${1}${i}.0/24" >> ips
-    fi
-  done
-}
 
 fixallthethings()
 {
@@ -32,6 +22,17 @@ fixallthethings()
     chown -R hacker:hacker nmap
   fi
   exit 0
+}
+
+BtoC()
+{
+  START=0
+  END=255
+  for (( i=$START; i <= $END ; i++)); do
+    if [[ $(expr length $i) -lt 255 ]]; then
+      echo "${1}${i}.0/24" >> ips
+    fi
+  done
 }
 
 nessus()

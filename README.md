@@ -4,7 +4,7 @@
 
 **About**
 
-Phase_Blaster takes ip CID blocks, host names, and or IP's from a file and performs large scale host discovery and follows through with available hosts aggressive scans while avoiding any IP's clients deem out of scope via an exclude file. Then produces xml output for Metasploit DB integration. All results are placed in a managed hierarchical directory tree.
+Phase_Blaster takes ip CID blocks, host names, and or IP's from a file and performs large scale host discovery and follows through with available hosts aggressive scans while avoiding any IP's clients deem out of scope via an exclude file. Then produces xml output for Metasploit DB integration. All results are placed in a managed hierarchical directory tree. Note you must adjust line 32 to use your systems user name.
 
 Such like:
 

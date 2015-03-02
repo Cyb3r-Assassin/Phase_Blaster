@@ -35,12 +35,15 @@ or
 
 sudo ./Phase_Blaster.sh 0.0.0.0
 
+Alternative modes -d will perform just a host discovery.Very useful for importing results into nessus scans. User may go back at any time and perform a -ff which will perform an nmap aggressive scan against the discovered hosts file.
+My favourite option is the -df which perform a discovery and then follow up with an nmap aggressive scan while delivery a progress output.
+
 **About**
-ClassB_to_C.sh takes a class B range CID and converts it into class C and dumps the output into the folder ips for Phase_Blaster. This allows nmap to scan a broke down block of class B it could not previously handle in a systematic manner.
+Converting a class B range CID and converts it into class C and dumps the output into the folder ips for Phase_Blaster. This allows nmap to scan a broke down block of class B it could not previously handle in a systematic manner.
 
 **call phase_blaster as follows**
 
-./ClassB_to_C.sh 127.0.
+./Phase_Blaster.sh -bc 127.0.
 
 **Output**
 The results would look like

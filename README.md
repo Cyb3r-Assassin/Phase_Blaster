@@ -79,7 +79,7 @@ I suggest the command
 
 >./Phase_Blaster.sh -bc 10.10. && ./Phase_blaster.sh -df && ./whois_around.sh && ./Phase_Parse
 
-**You must edit line 22 of Phase_Blaster.sh to use your default user name before running Phase_Blaster
+##You must edit line 22 of Phase_Blaster.sh to use your default user name before running Phase_Blaster
 
 
 Happy Hacking!

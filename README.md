@@ -73,11 +73,13 @@ until
 
 127.0.255.255
 
-For middle recon work use Phase_Parse.sh and whois_around.sh. Phas_Parse will give you a breakout of hosts with open ports only and a brief list of just the open ports. whois_around will do a quick nbtscan of the discovered
+For middle recon work use Phase_Parse.sh and whois_around.sh. Phase_Parse will give you a breakout of hosts with open ports only and a brief list of just the open ports. whois_around will do a quick nbtscan of the discovered
 hosts and provide a host name breakdown for all NetBios host name, ip, and MAC addressed of all the system in the ips folders range.
 I suggest the command
 
 >./Phase_Blaster.sh -bc 10.10. && ./Phase_blaster.sh -df && ./whois_around.sh && ./Phase_Parse
+
+**You must edit line 22 of Phase_Blaster.sh to use your default user name before running Phase_Blaster
 
 
 Happy Hacking!

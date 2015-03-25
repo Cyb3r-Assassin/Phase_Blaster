@@ -32,17 +32,17 @@ Any ip's you need excluded from the scans in the exclude file in the same manner
 
 **call phase_blaster as follows**
 
-sudo ./Phase_Blaster.sh -f
+>sudo ./Phase_Blaster.sh -f
 
 **Phase_blaster also allows individual ip entries at any point and adds them into the directory structure and produces a new msf ready xml file.**
 
 if you need to run just one new entry do so as
 
-sudo ./Phase_Blaster.sh 0.0.0.0/24
+>sudo ./Phase_Blaster.sh 0.0.0.0/24
 
 or
 
-sudo ./Phase_Blaster.sh 0.0.0.0
+>sudo ./Phase_Blaster.sh 0.0.0.0
 
 Alternative modes -d will perform just a host discovery.Very useful for importing results into Nessus scans. User may go back at any time and perform a -ff which will perform an nmap aggressive scan against the discovered hosts file.
 My favourite option is the -df which perform a discovery and then follow up with an nmap aggressive scan while delivery a progress output.
@@ -52,7 +52,7 @@ Converting a class B range CID and converts it into class C and dumps the output
 
 **call phase_blaster as follows**
 
-./Phase_Blaster.sh -bc 127.0.
+>./Phase_Blaster.sh -bc 127.0.
 
 **Output**
 The results would look like
@@ -77,7 +77,7 @@ For middle recon work use Phase_Parse.sh and whois_around.sh. Phas_Parse will gi
 hosts and provide a host name breakdown for all NetBios host name, ip, and MAC addressed of all the system in the ips folders range.
 I suggest the command
 
->>./Phase_Blaster.sh -bc 10.10. && ./Phase_blaster.sh -df && ./whois_around.sh && ./Phase_Parse
+>./Phase_Blaster.sh -bc 10.10. && ./Phase_blaster.sh -df && ./whois_around.sh && ./Phase_Parse
 
 
 Happy Hacking!

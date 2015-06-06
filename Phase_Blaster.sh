@@ -37,13 +37,16 @@ BtoC()
 
 nessus()
 {
-  for i in nmap/*; do
-    if [[ -d $i ]]; then
-      echo -e "\nnow printing results of all hosts alive and dumping them into nmap/Nesses"
-      [[ -f $i/hosts ]] && cat $i/hosts >> nmap/Nessus
-      cat nmap/Nessus
+  while read host
+  do
+    [[ ! -e exclude ]] && touch exclude #prevent the following line from returning bits if file exclude does not exist
+    echo -e "\nChecking if $host is in the DoNot Disturb list.\n"
+    if [[ -z $(grep $host exclude) ]]; then #Is this ip in our range off limits?
+      echo "Scanning $host" #ip is safe so scan it
+      echo $host >> nmap/Nessus
     fi
-  done
+  done < $1 #Grab the first host from our list of active hosts found during function scan()
+  cat nmap/Nessus
 }
 
 discovery()
@@ -102,6 +105,22 @@ scanallthethings()
   done < $1 #Grab the first host from our list of active hosts found during function scan()
 }
 
+phase_parse()
+{
+  for i in nmap/all_hosts/*
+    do
+      if [ -f $i ]; then
+        [ $i != 'msf' ] && host=$(grep [0-9]/ "$i" | grep open)
+        [ -n "$host" ] && echo -e "$i\n$host\n"
+      fi
+  done
+}
+
+npt()
+{
+  while read line; do nbtscan $line; done < ips
+}
+
 launch()
 {
   [[ ! -d nmap ]] && mkdir nmap
@@ -126,6 +145,12 @@ launch()
     scan -df
   elif [[ $1 == "-ff" ]]; then
     scan -ff
+  elif [[ $1 == "-p" ]]; then
+    phase_parse
+  elif [[ $1 == "-npt" ]]; then
+    npt
+  elif [[ $1 == "-nessus" ]]; then
+    nessus
   else #determin if we are scanning a CID or a Host and not using a file
     scan -f $1
   fi

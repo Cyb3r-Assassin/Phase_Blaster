@@ -1,3 +1,6 @@
+.8 Moved whois_around and Phase_Parse into Phase_Blaster with flaggs -nbt -p. Updataed Nessus parse option with standalone flag -nessus and included address sanity checks via exclude file before populating list.
+.7 added some clean up reports to Phas_Phase
+Merged additional scripts into one with flags
 03-15-15 added breakout scrip additions Phase_Parse and whois_Around
 .6 Added ip class B to C enumeration capability. Added entire new level of host discovery logic and scanning. Added discovery output files for 3rd party application importing. Improved clean up. Fixed all the bugs.
 .5 Fixed msf output for CID compliant entries. Added a better organization to .xml file placement for msf input. Greatly improved follow along functionality during scanning progress. Added output host file for easy Nessus implementation. Added a class alteration script.

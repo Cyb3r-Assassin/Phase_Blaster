@@ -111,7 +111,7 @@ phase_parse()
     do
       if [ -f $i ]; then
         [ $i != 'msf' ] && host=$(grep [0-9]/ "$i" | grep open)
-        [ -n "$host" ] && echo -e "$i\n$host\n"
+        [ -n "$host" ] && echo -e "$i\n$host\n" | sed 's:nmap/all_hosts/::'
       fi
   done
 }

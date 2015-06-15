@@ -1,3 +1,4 @@
+
 #!/bin/bash
 
 if [[ $(id -u) != 0 ]]; then # Verify we are root if not exit
@@ -44,6 +45,8 @@ nessus()
     if [[ -z $(grep $host exclude) ]]; then #Is this ip in our range off limits?
       echo "Scanning $host" #ip is safe so scan it
       echo $host >> nmap/Nessus
+    else
+      echo "Skipping $host"
     fi
   done < $1 #Grab the first host from our list of active hosts found during function scan()
   cat nmap/Nessus
@@ -93,11 +96,11 @@ scanallthethings()
     if [[ -z $(grep $host exclude) ]]; then #Is this ip in our range off limits?
       echo "Scanning $host" #ip is safe so scan it
       if [[ $2 == '-f' ]]; then
-        nmap -A -oA nmap/${ip}/msf/$host $host >> nmap/${ip}/$host #Scan the ip, drop results into file nmap/${ip}/$host and the MSF file into nmap/${ip}/msf/$host
+        nmap -f -oA nmap/${ip}/msf/$host $host >> nmap/${ip}/$host #Scan the ip, drop results into file nmap/${ip}/$host and the MSF file into nmap/${ip}/msf/$host
         echo -e "\n" #Improve readability
         cat nmap/${ip}/$host #here are the goods so that you have a working status quo in the terminal during the progress.
       elif [[ $2 == '-A' ]]; then
-        nmap -A -oA nmap/all_hosts/msf/$host $host >> nmap/all_hosts/$host #Scan the ip, drop results into file nmap/all_hosts and the MSF file into nmap/all_hosts/msf/$host
+        nmap -f -oA nmap/all_hosts/msf/$host $host >> nmap/all_hosts/$host #Scan the ip, drop results into file nmap/all_hosts and the MSF file into nmap/all_hosts/msf/$host
         echo -e "\n" #Improve readability
         cat nmap/all_hosts/$host #here are the goods so that you have a working status quo in the terminal during the progress.
       fi
@@ -107,18 +110,39 @@ scanallthethings()
 
 phase_parse()
 {
-  for i in nmap/all_hosts/*
-    do
-      if [ -f $i ]; then
-        [ $i != 'msf' ] && host=$(grep [0-9]/ "$i" | grep open)
-        [ -n "$host" ] && echo -e "$i\n$host\n" | sed 's:nmap/all_hosts/::'
-      fi
-  done
+  if [[ -d nmap/all_hosts ]]; then
+    for i in nmap/all_hosts/*
+      do
+        phase_parse2 $i a
+    done
+  fi
+  if
+    for i in nmap/[0-9]*/*
+      do
+        phase_parse2 $i b
+     done
+  fi
+  exit 0
+}
+
+phase_parse2()
+{
+  if [ -f $1 ]; then
+    if [[ $1 != 'msf' && $1 != 'hosts' ]]; then
+      host=$(grep [0-9]/ "$1" | grep open)
+    fi
+
+    if [ $2 == 'a' ]; then
+      [ -n "$host" ] && echo -e "$1\n$host\n" | sed 's:nmap/all_hosts/::'
+    elif [ $2 == 'b' ]; then
+      [ -n "$host" ] && echo -e "$1" | awk -F[0-9]/ '{print $2}' && echo -e "$host\n"
+    fi
+  fi
 }
 
 npt()
 {
-  while read line; do nbtscan $line; done < ips
+  nbtscan -f ips
 }
 
 launch()
@@ -129,6 +153,9 @@ launch()
     echo -e "To convert a class B range to a scannable block of C's use option -bc ip (example: ./Phase_Blaster -bc 127.0.)\n"
     echo -e "To scan from a file named ips place all ips, and ip ranges to be scanned in a text file named \"ips\" separated by line breaks (example: ./Phase_Blaster -f)\n"
     echo -e "Command -df performs a complete ping sweep, creates a file of all live hosts and then aggressive scans each of them\nwhile tallying results into individual files by ip's and creates a msf folder with msf importable .xml results.\n\nUsing options -d & -ff are done so by enabling the user the ability of running just a discovery scan with -d and\nthen having the option to go back at a later date and run -ff for a comprehensive scan overview of the -d results.\n\nYou may also call Phase_Blaster with a single IP or CID and have them enumerated at any point in the same method -f worked. \n(example: ./Phase_Blaster 120.0.0.5 or ./Phase_Blaster 120.0.0.0/24)"
+    echo -e "Use -p to parse the nmap output into readable format"
+    echo -e "Use -npt to run a netbios host discovery against the ips file"
+    echo -e "Use -nessus to generate an import file of only approved IP addressed from a host discovery for nessus scanning"
   elif [[ $1 == "-bc" ]]; then
     BtoC $2
   elif [[ $1 == "-f" ]]; then

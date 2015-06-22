@@ -1,4 +1,3 @@
-
 #!/bin/bash
 
 if [[ $(id -u) != 0 ]]; then # Verify we are root if not exit
@@ -116,12 +115,11 @@ phase_parse()
         phase_parse2 $i a
     done
   fi
-  if
-    for i in nmap/[0-9]*/*
-      do
-        phase_parse2 $i b
-     done
-  fi
+  
+  for i in nmap/[0-9]*/*
+    do
+      phase_parse2 $i b
+  done
   exit 0
 }
 
@@ -160,8 +158,8 @@ launch()
     BtoC $2
   elif [[ $1 == "-f" ]]; then
     while read ips
-    do
-      scan -f $ips
+      do
+        scan -f $ips
     done < ips
     nessus
   elif [[ $1 == "-d" ]]; then

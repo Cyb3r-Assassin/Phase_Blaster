@@ -51,7 +51,7 @@ nessus()
   cat nmap/Nessus
 }
 
-discovery()
+discovery() # Add process string for discovering if whe use file ips or if an ip set was passed as $2 on the CLI
 {
   [[ ! -d nmap ]] && mkdir nmap #This isn't needed but I hate seeing warning messages
   [[ ! -d nmap/all_hosts ]] && mkdir nmap/all_hosts
@@ -156,7 +156,7 @@ launch()
     echo -e "Use -nessus to generate an import file of only approved IP addressed from a host discovery for nessus scanning"
   elif [[ $1 == "-bc" ]]; then
     BtoC $2
-  elif [[ $1 == "-f" ]]; then
+  elif [[ $1 == "-f" ]]; then # Add the function to use ip's submitted via CLI back in and not just the IPS file
     while read ips
       do
         scan -f $ips

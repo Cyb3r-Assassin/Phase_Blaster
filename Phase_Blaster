@@ -19,7 +19,7 @@ fixallthethings()
   done
   echo "Setting permissions back to user"
   if [[ -d nmap ]]; then
-    chown -R hacker:hacker nmap
+    chown -R $USER:$USER nmap
   fi
   exit 0
 }
@@ -56,11 +56,16 @@ discovery() # Add process string for discovering if whe use file ips or if an ip
   [[ ! -d nmap ]] && mkdir nmap #This isn't needed but I hate seeing warning messages
   [[ ! -d nmap/all_hosts ]] && mkdir nmap/all_hosts
   [[ ! -f nmap/all_hosts/all_hosts ]] && touch nmap/all_hosts/all_hosts
-  while read ip
-  do
-    echo -e "scanning $ip\n"
-    nmap -sP $ip | grep -i report | awk -F"for" '{ print $2 }' | cut -d' ' -f2 >> nmap/all_hosts/all_hosts
-  done < ips
+  if [[ -z $1 ]]; then
+    while read ip
+    do
+      echo -e "scanning $ip\n"
+      nmap -sP $ip | grep -i report | awk -F"for" '{ print $2 }' | cut -d' ' -f2 >> nmap/all_hosts/all_hosts
+    done < ips
+  else
+    echo -e "scanning $1\n"
+    nmap -sP $1 | grep -i report | awk -F"for" '{ print $2 }' | cut -d' ' -f2 >> nmap/all_hosts/all_hosts
+  fi
 }
 
 scan()
@@ -147,7 +152,7 @@ launch()
 {
   [[ ! -d nmap ]] && mkdir nmap
   if [[ -z $1 || $1 == "--help" || $1 == "-h" || $1 == "" ]]; then
-    echo -e "Useage is Commands [-f -d -ff -df -bc] or [IP] / [CID]\n"
+    echo -e "Useage is Commands [-f -d -ff -df -bc] or [-f -d] [IP]/[CID]\n"
     echo -e "To convert a class B range to a scannable block of C's use option -bc ip (example: ./Phase_Blaster -bc 127.0.)\n"
     echo -e "To scan from a file named ips place all ips, and ip ranges to be scanned in a text file named \"ips\" separated by line breaks (example: ./Phase_Blaster -f)\n"
     echo -e "Command -df performs a complete ping sweep, creates a file of all live hosts and then aggressive scans each of them\nwhile tallying results into individual files by ip's and creates a msf folder with msf importable .xml results.\n\nUsing options -d & -ff are done so by enabling the user the ability of running just a discovery scan with -d and\nthen having the option to go back at a later date and run -ff for a comprehensive scan overview of the -d results.\n\nYou may also call Phase_Blaster with a single IP or CID and have them enumerated at any point in the same method -f worked. \n(example: ./Phase_Blaster 120.0.0.5 or ./Phase_Blaster 120.0.0.0/24)"
@@ -157,14 +162,23 @@ launch()
   elif [[ $1 == "-bc" ]]; then
     BtoC $2
   elif [[ $1 == "-f" ]]; then # Add the function to use ip's submitted via CLI back in and not just the IPS file
-    while read ips
-      do
-        scan -f $ips
-    done < ips
-    nessus
+    if [[ -z $2 ]]; then
+      while read ips
+        do
+          scan -f $ips
+      done < ips
+      nessus
+    else
+      scan -f $2
+    fi
   elif [[ $1 == "-d" ]]; then
-    discovery
-    cat nmap/all_hosts/all_hosts
+    if [[ -z $2 ]]; then
+      discovery
+      cat nmap/all_hosts/all_hosts
+    else
+      discovery $2
+      cat nmap/all_hosts/all_hosts
+    fi
   elif [[ $1 == "-d-f" || $1 == "-f-d" || $1 == "-df" || $1 == "-fd"  ]]; then
     discovery
     scan -df
@@ -177,7 +191,8 @@ launch()
   elif [[ $1 == "-nessus" ]]; then
     nessus
   else #determin if we are scanning a CID or a Host and not using a file
-    scan -f $1
+    echo "You goofed something padawan"
+    launch -h
   fi
 }
 

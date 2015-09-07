@@ -1,3 +1,4 @@
+.12 Added individual ip and CID discovery scanning from CLI. Adjusted launch interpretation logic to prevent user from frustrated results with malformed inputs.
 .11 bug fixes
 .9 Cleaned Phase_Blaster -p output up a little bit more.
 .8 Moved whois_around and Phase_Parse into Phase_Blaster with flaggs -nbt -p. Updataed Nessus parse option with standalone flag -nessus and included address sanity checks via exclude file before populating list.

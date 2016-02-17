@@ -1,28 +1,17 @@
 #!/bin/bash
 
-if [[ $(id -u) != 0 ]]; then # Verify we are root if not exit
-   echo "Please Run This Script As Root or With Sudo!" 1>&2
-   exit 1
-fi
-
-trap fixallthethings INT HUP;
-
 fixallthethings()
 {
+  ID=$(echo $USER)
   echo -e "\n" #Improve readability
   echo "Doing clean up"
-  for i in nmap/*; do
-    if [[ -d $i ]]; then
-      [[ -z $(file $i/msf/*.nmap | grep cannot) ]] && rm $i/msf/*.nmap
-      [[ -z $(file $i/msf/*.gnmap | grep cannot) ]] && rm $i/msf/*.gnmap
-    fi
-  done
-  echo "Setting permissions back to user"
-  if [[ -d nmap ]]; then
-    chown -R $USER:$USER nmap
-  fi
+  [[ -e nmap/all_hosts/msf/.nmap ]] && rm nmap/all_hosts/msf/.nmap
+  [[ -e nmap/all_hosts/msf/.gnmap ]] && rm nmap/all_hosts/msf/.gnmap
+  [[ -d nmap ]] && echo "Setting permissions back to user"; sudo chown -R $ID:$ID nmap
   exit 0
 }
+
+trap fixallthethings INT HUP;
 
 BtoC()
 {
@@ -35,164 +24,116 @@ BtoC()
   done
 }
 
-nessus()
+#phase_parse()
+#{
+#  while read -r; do
+    #while read -r i; do
+     # echo $i
+#      echo "space"
+#      grep report #| awk -F'for ' '{print $2}'
+#      echo "space"
+#      grep [0-9]/ #| grep open
+    #done < $line
+#  done < nmap/all_hosts/results
+#  exit 0
+#}
+
+nbt()
 {
+  while read host; do
+    nbtscan -f $host
+  done < ips
+}
+
+discovery() #Process string for discovering if whe use file ips or if an ip set was passed as $2 on the CLI
+{
+  if [[ -z $1 ]]; then
+    nmap -sn -iL ips | grep -i report | awk -F"for" '{ print $2 }' | cut -d' ' -f2 >> nmap/all_hosts/all_hosts
+  else
+    echo -e "scanning $1\n"
+    nmap -sn $1 | grep -i report | awk -F"for" '{ print $2 }' | cut -d' ' -f2 >> nmap/all_hosts/all_hosts
+  fi
+}
+
+nessus()  #Serve dual functions to build safe Nessus list or build parallelizable list for nmap
+{
+  #[[ ! -f nmap/all_hosts/all_hosts ]] && echo "No discovery of hosts has been performed. Nothing to do."; exit 1
   while read host
   do
-    [[ ! -e exclude ]] && touch exclude #prevent the following line from returning bits if file exclude does not exist
-    echo -e "\nChecking if $host is in the DoNot Disturb list.\n"
     if [[ -z $(grep $host exclude) ]]; then #Is this ip in our range off limits?
-      echo "Scanning $host" #ip is safe so scan it
-      echo $host >> nmap/Nessus
+      echo "$host" >> nmap/Nessus #ip is safe
     else
       echo "Skipping $host"
     fi
-  done < $1 #Grab the first host from our list of active hosts found during function scan()
-  cat nmap/Nessus
-}
-
-discovery() # Add process string for discovering if whe use file ips or if an ip set was passed as $2 on the CLI
-{
-  [[ ! -d nmap ]] && mkdir nmap #This isn't needed but I hate seeing warning messages
-  [[ ! -d nmap/all_hosts ]] && mkdir nmap/all_hosts
-  [[ ! -f nmap/all_hosts/all_hosts ]] && touch nmap/all_hosts/all_hosts
-  if [[ -z $1 ]]; then
-    while read ip
-    do
-      echo -e "scanning $ip\n"
-      nmap -sP $ip | grep -i report | awk -F"for" '{ print $2 }' | cut -d' ' -f2 >> nmap/all_hosts/all_hosts
-    done < ips
-  else
-    echo -e "scanning $1\n"
-    nmap -sP $1 | grep -i report | awk -F"for" '{ print $2 }' | cut -d' ' -f2 >> nmap/all_hosts/all_hosts
-  fi
-}
-
-scan()
-{
-  if [[ -n $(echo $2 | grep /) ]]; then
-    ip=${2:0:-3} #Strip the CID from the ip range
-  else
-    ip=$2
-  fi
-  #Find all live hosts in the CID and place them in a file named hosts
-  if [[ $1 == '-df' ]]; then #We found all the things first. Now scan them
-    scanallthethings nmap/all_hosts/all_hosts -A #Call scanallthethings function to find active services.
-  elif [[ $1 == '-ff' ]]; then #User ran -d at a prior time and now needs to run a comprehensive nmap scan against the discovered hosts.
-    scanallthethings nmap/all_hosts/all_hosts -A
-  elif [[ $1 == '-f' ]]; then #Find all the things in the first range, scan it and then move onto the next range because at this point we are inside a loop
-    [[ ! -d nmap/$ip ]] && mkdir nmap/$ip nmap/${ip}/msf && echo "Directorys made nmap/$ip & nmap/${ip}/msf" || echo "output dir already exists. We will be outputing into it, I hope this is ok"
-    nmap -sP $2 | grep -i report | awk -F"for" '{ print $2 }' | cut -d' ' -f2 >> nmap/${ip}/hosts
-    scanallthethings nmap/${ip}/hosts -f #Call scanallthethings function to find active services.
-  fi
+  done < nmap/all_hosts/all_hosts
+  [[ -z $1 ]] && cat nmap/Nessus || mv nmap/Nessus nmap/safe_ips #build parallelizable list for nmap
 }
 
 scanallthethings()
 {
-  if [[ $2 == '-A' ]]; then
-    [[ ! -d nmap/all_hosts/msf ]] && [[ ! -d nmap/all_hosts ]] && mkdir nmap/all_hosts || mkdir nmap/all_hosts/msf
+  if [[ $1 != "-f" ]]; then
+    sudo nmap ${NMAP_VAL} -iL nmap/safe_ips -oA nmap/all_hosts/msf/ >> nmap/all_hosts/results #Scan the ip, drop results into file nmap/all_hosts/$host and the MSF file into nmap/all_hosts/msf/$host
+  else
+    sudo nmap ${NMAP_VAL} -iL ips -oA nmap/all_hosts/msf/ >> nmap/all_hosts/results #Scan the ip, drop results into file nmap/all_hosts/$host and the MSF file into nmap/all_hosts/msf/$host
   fi
-
-  while read host
-  do
-    [[ ! -e exclude ]] && touch exclude #prevent the following line from returning bits if file exclude does not exist
-    echo -e "\nChecking if $host is in the DoNot Disturb list.\n"
-    if [[ -z $(grep $host exclude) ]]; then #Is this ip in our range off limits?
-      echo "Scanning $host" #ip is safe so scan it
-      if [[ $2 == '-f' ]]; then
-        nmap -f -oA nmap/${ip}/msf/$host $host >> nmap/${ip}/$host #Scan the ip, drop results into file nmap/${ip}/$host and the MSF file into nmap/${ip}/msf/$host
-        echo -e "\n" #Improve readability
-        cat nmap/${ip}/$host #here are the goods so that you have a working status quo in the terminal during the progress.
-      elif [[ $2 == '-A' ]]; then
-        nmap -f -oA nmap/all_hosts/msf/$host $host >> nmap/all_hosts/$host #Scan the ip, drop results into file nmap/all_hosts and the MSF file into nmap/all_hosts/msf/$host
-        echo -e "\n" #Improve readability
-        cat nmap/all_hosts/$host #here are the goods so that you have a working status quo in the terminal during the progress.
-      fi
-    fi
-  done < $1 #Grab the first host from our list of active hosts found during function scan()
-}
-
-phase_parse()
-{
-  if [[ -d nmap/all_hosts ]]; then
-    for i in nmap/all_hosts/*
-      do
-        phase_parse2 $i a
-    done
-  fi
-  
-  for i in nmap/[0-9]*/*
-    do
-      phase_parse2 $i b
-  done
-  exit 0
-}
-
-phase_parse2()
-{
-  if [ -f $1 ]; then
-    if [[ $1 != 'msf' && $1 != 'hosts' ]]; then
-      host=$(grep [0-9]/ "$1" | grep open)
-    fi
-
-    if [ $2 == 'a' ]; then
-      [ -n "$host" ] && echo -e "$1\n$host\n" | sed 's:nmap/all_hosts/::'
-    elif [ $2 == 'b' ]; then
-      [ -n "$host" ] && echo -e "$1" | awk -F[0-9]/ '{print $2}' && echo -e "$host\n"
-    fi
-  fi
-}
-
-npt()
-{
-  nbtscan -f ips
+  echo -e "\n" #Improve readability
+  cat nmap/all_hosts/results #here are the goods so that you have a working status quo in the terminal during the progress.
 }
 
 launch()
 {
+  [[ ! -e exclude ]] && touch exclude #prevent the following line from returning bits if file exclude does not exist
   [[ ! -d nmap ]] && mkdir nmap
-  if [[ -z $1 || $1 == "--help" || $1 == "-h" || $1 == "" ]]; then
-    echo -e "Useage is Commands [-f -d -ff -df -bc] or [-f -d] [IP]/[CID]\n"
-    echo -e "To convert a class B range to a scannable block of C's use option -bc ip (example: ./Phase_Blaster -bc 127.0.)\n"
-    echo -e "To scan from a file named ips place all ips, and ip ranges to be scanned in a text file named \"ips\" separated by line breaks (example: ./Phase_Blaster -f)\n"
-    echo -e "Command -df performs a complete ping sweep, creates a file of all live hosts and then aggressive scans each of them\nwhile tallying results into individual files by ip's and creates a msf folder with msf importable .xml results.\n\nUsing options -d & -ff are done so by enabling the user the ability of running just a discovery scan with -d and\nthen having the option to go back at a later date and run -ff for a comprehensive scan overview of the -d results.\n\nYou may also call Phase_Blaster with a single IP or CID and have them enumerated at any point in the same method -f worked. \n(example: ./Phase_Blaster 120.0.0.5 or ./Phase_Blaster 120.0.0.0/24)"
-    echo -e "Use -p to parse the nmap output into readable format"
-    echo -e "Use -npt to run a netbios host discovery against the ips file"
-    echo -e "Use -nessus to generate an import file of only approved IP addressed from a host discovery for nessus scanning"
+  [[ ! -d nmap/all_hosts ]] && mkdir nmap/all_hosts
+  [[ ! -e nmap/all_hosts/all_hosts ]] && touch nmap/all_hosts/all_hosts
+  [[ ! -d nmap/all_hosts/msf ]] &&  mkdir nmap/all_hosts/msf
+  [[ $2 == "--nmap" || $1 == "--nmap" ]] && read -p "What nmap variables would you like to scan with? e.g. -sS -sV" NMAP_VAL || NMAP_VAL="-A"
+  if [[ -z $1 || $1 == "--help" || $1 == "-h" ]]; then
+    echo -e "Useage Commands are switch [-f -d -ff -df -bc --p --nbt --nessus ] flag [--nmap ] [IP]/[CID]\n"
+    echo -e "-bc To convert a class B range to a scannable block of C's use option -bc ip (example: ./Phase_Blaster -bc 127.0.)\n"
+    echo -e "-f To scan from a file named ips place all ips, and ip ranges to be scanned in a text file named \"ips\" separated by line breaks (example: ./Phase_Blaster -f)\n"
+    echo -e "-df Command -df performs a complete ping sweep, creates a file of all live hosts and then nmap scans each of them\nwhile tallying results into individual files by ip's and creates a msf folder with msf importable .xml results.\n"
+    echo -e "-d & -ff Using options -d & -ff are done so by enabling the user the ability of running just a discovery scan with -d and\nthen having the option to go back at a later date and run -ff for a comprehensive scan overview of the -d results.\n"
+    echo -e "You may also call Phase_Blaster with a single IP or CID and have them enumerated at any point in the same method -f worked. \n(example: ./Phase_Blaster 127.0.0.0 or ./Phase_Blaster 127.0.0.0/24) or just do a discovery by adding -d"
+    echo -e "Use --nmap as the second argument or the first for direct host scanning to run nmap with custom flags. User is prompted with an input function (exampln: ./Phase_Blaster -df --nmap or ./Phase_Blaster --nmap 127.0.0.0"
+    echo "The following commands are used independantly"
+#    echo -e "--p to parse the nmap output into readable format"
+    echo -e "--npt to run a netbios host discovery against the ips file"
+    echo -e "--nessus to generate an import file of only approved IP addressed from a host discovery for nessus scanning"
   elif [[ $1 == "-bc" ]]; then
     BtoC $2
   elif [[ $1 == "-f" ]]; then # Add the function to use ip's submitted via CLI back in and not just the IPS file
-    if [[ -z $2 ]]; then
-      while read ips
-        do
-          scan -f $ips
-      done < ips
-      nessus
-    else
-      scan -f $2
-    fi
+      scanallthethings -f
   elif [[ $1 == "-d" ]]; then
-    if [[ -z $2 ]]; then
+    if [[ -z $2 && $2 != "--nmap" ]]; then
       discovery
       cat nmap/all_hosts/all_hosts
+    elif [[ $2 == "--nmap" ]]; then
+      echo "You can't specify --nmap for -d"
+      exit 1
     else
-      discovery $2
-      cat nmap/all_hosts/all_hosts
+      [[ $2 == [0-9] ]] && discovery $2; cat nmap/all_hosts/all_hosts
     fi
-  elif [[ $1 == "-d-f" || $1 == "-f-d" || $1 == "-df" || $1 == "-fd"  ]]; then
+  elif [[ $1 == "-df" || $1 == "-fd"  ]]; then
     discovery
-    scan -df
+    nessus build
+    scanallthethings
   elif [[ $1 == "-ff" ]]; then
-    scan -ff
-  elif [[ $1 == "-p" ]]; then
-    phase_parse
-  elif [[ $1 == "-npt" ]]; then
-    npt
-  elif [[ $1 == "-nessus" ]]; then
+    nessus build
+    scanallthethings
+#  elif [[ $1 == "--p" ]]; then
+#    phase_parse
+  elif [[ $1 == "--nbt" ]]; then
+    [[ -z $2 ]] && echo "No ip block specified to scan"; exit 1
+    nbt $2
+  elif [[ $1 == "--nessus" ]]; then
     nessus
-  else #determin if we are scanning a CID or a Host and not using a file
-    echo "You goofed something padawan"
-    launch -h
+  else
+    if [[ $1 == [0-9] || $2 == [0-9] ]]; then
+      [[ $1 != "--nmap" ]] && discovery $1 || discovery $2
+      nessus build
+      scanallthethings
+    fi
   fi
 }
 

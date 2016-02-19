@@ -23,17 +23,17 @@ Any ip's you need excluded from the scans in the exclude file in the same manner
 
 **call phase_blaster as follows**
 
->sudo ./Phase_Blaster.sh -f
+>./Phase_Blaster.sh -f
 
 **Phase_blaster also allows individual ip entries at any point and adds them into the directory structure and produces a new msf ready xml file.**
 
 if you need to run just one new entry do so as
 
->sudo ./Phase_Blaster.sh -f/-d 0.0.0.0/24
+>./Phase_Blaster.sh 0.0.0.0/24
 
 or
 
->sudo ./Phase_Blaster -f/-d 0.0.0.0
+>./Phase_Blaster 0.0.0.0
 
 Alternative modes -d will perform just a host discovery. Very useful for importing results into Nessus scans. User may go back at any time and perform a -ff which will perform a nmap aggressive scan against the discovered hosts file. My favourite option is the -df which perform a discovery and then follow up with an nmap aggressive scan while delivery a progress output.
 

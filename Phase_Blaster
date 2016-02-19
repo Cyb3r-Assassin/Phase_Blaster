@@ -24,25 +24,19 @@ BtoC()
   done
 }
 
-#phase_parse()
-#{
-#  while read -r; do
-    #while read -r i; do
-     # echo $i
-#      echo "space"
-#      grep report #| awk -F'for ' '{print $2}'
-#      echo "space"
-#      grep [0-9]/ #| grep open
-    #done < $line
-#  done < nmap/all_hosts/results
-#  exit 0
-#}
+phase_parse()
+{
+  while IFS=$'\n' read -r line; do
+    grep report $line | awk -F'for ' '{print $2}'; grep [0-9]/ $line | grep open
+  done <<< nmap/all_hosts/results
+  exit 0
+}
 
 nbt()
 {
-  while read host; do
+  while IFS=$'\n' read -r host; do
     nbtscan -f $host
-  done < ips
+  done <<< ips
 }
 
 discovery() #Process string for discovering if whe use file ips or if an ip set was passed as $2 on the CLI
@@ -65,7 +59,7 @@ nessus()  #Serve dual functions to build safe Nessus list or build parallelizabl
     else
       echo "Skipping $host"
     fi
-  done < nmap/all_hosts/all_hosts
+  done <<< nmap/all_hosts/all_hosts
   [[ -z $1 ]] && cat nmap/Nessus || mv nmap/Nessus nmap/safe_ips #build parallelizable list for nmap
 }
 
@@ -121,8 +115,8 @@ launch()
   elif [[ $1 == "-ff" ]]; then
     nessus build
     scanallthethings
-#  elif [[ $1 == "--p" ]]; then
-#    phase_parse
+  elif [[ $1 == "--p" ]]; then
+    phase_parse
   elif [[ $1 == "--nbt" ]]; then
     [[ -z $2 ]] && echo "No ip block specified to scan"; exit 1
     nbt $2

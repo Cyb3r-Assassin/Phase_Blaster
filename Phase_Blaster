@@ -80,10 +80,16 @@ nikto()
 
 scanallthethings()
 {
+  [[ $2 != "-f" ]] && file="ips" || file="nmap/safe_ips"
+  ips=""
+  while IFS= read -r host; do
+    ips="${ips}${host} "
+  done < $file
+
   if [[ $1 != "-f" ]]; then
-    sudo nmap ${NMAP_VAL} -iL nmap/safe_ips -oA nmap/all_hosts/msf/ >> nmap/all_hosts/results #Scan the ip, drop results into file nmap/all_hosts/$host and the MSF file into nmap/all_hosts/msf/$host
+    sudo nmap ${NMAP_VAL} ${ips}-oA nmap/all_hosts/msf/ >> nmap/all_hosts/results #Scan the ip, drop results into file nmap/all_hosts/$host and the MSF file into nmap/all_hosts/msf/$host
   else
-    sudo nmap ${NMAP_VAL} -iL ips -oA nmap/all_hosts/msf/ >> nmap/all_hosts/results #Scan the ip, drop results into file nmap/all_hosts/$host and the MSF file into nmap/all_hosts/msf/$host
+    sudo nmap ${NMAP_VAL} ${ips}-oA nmap/all_hosts/msf/ >> nmap/all_hosts/results #Scan the ip, drop results into file nmap/all_hosts/$host and the MSF file into nmap/all_hosts/msf/$host
   fi
   echo -e "\n" #Improve readability
   cat nmap/all_hosts/results #here are the goods so that you have a working status quo in the terminal during the progress.
@@ -98,7 +104,7 @@ launch()
   [[ ! -d nmap/all_hosts/msf ]] &&  mkdir nmap/all_hosts/msf
   [[ $2 == "--nmap" || $1 == "--nmap" ]] && read -p "What nmap variables would you like to scan with? e.g. -sS -sV" NMAP_VAL || NMAP_VAL="-A"
   if [[ -z $1 || $1 == "--help" || $1 == "-h" ]]; then
-    echo -e "Useage Commands are switch [-f -d -ff -df -bc --p --nbt --nessus ] flag [--nmap ] [IP]/[CID]\n"
+    echo -e "Useage Commands are switch [-f -d -ff -df -bc --p --nbt --nessus ] flag [ --nmap ] [IP]/[CID]\n"
     echo -e "-bc To convert a class B range to a scannable block of C's use option -bc ip (example: ./Phase_Blaster -bc 127.0.)\n"
     echo -e "-f To scan from a file named ips place all ips, and ip ranges to be scanned in a text file named \"ips\" separated by line breaks (example: ./Phase_Blaster -f)\n"
     echo -e "-df Command -df performs a complete ping sweep, creates a file of all live hosts and then nmap scans each of them\nwhile tallying results into individual files by ip's and creates a msf folder with msf importable .xml results.\n"

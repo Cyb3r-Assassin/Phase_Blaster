@@ -26,17 +26,22 @@ BtoC()
 
 phase_parse()
 {
+
   while IFS=$'\n' read -r line; do
-    grep report $line | awk -F'for ' '{print $2}'; grep [0-9]/ $line | grep open
-  done <<< nmap/all_hosts/results
+    host0=$(echo "$line" | grep -e report | awk -F'for ' '{print $2}')
+    host1=$(echo "$line" | grep -e [0-9]/ | grep open)
+    [[ -n "$host0" ]] && echo -e "\n${BLD_RED}${host0}${TXT_RST}"; host0=""
+    [[ -z "$host0" && -n "$host1" ]] && echo "${BLD_TEA}${host1}${TXT_RST}"
+  done < nmap/all_hosts/results
   exit 0
 }
 
 nbt()
 {
-  while IFS=$'\n' read -r host; do
-    nbtscan -f $host
-  done <<< ips
+  echo "fuck"
+  while read -r line; do
+    [[ -n "$line" ]] && sudo nbtscan -r "$line"
+  done < <(grep "/" ips)
 }
 
 discovery() #Process string for discovering if whe use file ips or if an ip set was passed as $2 on the CLI
@@ -52,14 +57,19 @@ discovery() #Process string for discovering if whe use file ips or if an ip set 
 nessus()  #Serve dual functions to build safe Nessus list or build parallelizable list for nmap
 {
   #[[ ! -f nmap/all_hosts/all_hosts ]] && echo "No discovery of hosts has been performed. Nothing to do."; exit 1
-  while read host
-  do
-    if [[ -z $(grep $host exclude) ]]; then #Is this ip in our range off limits?
-      echo "$host" >> nmap/Nessus #ip is safe
-    else
-      echo "Skipping $host"
-    fi
-  done <<< nmap/all_hosts/all_hosts
+  if [[ ! -e nmap/Nessus ]]; then
+    while IFS=$'\n' read -r host
+    do
+      if [[ -z $(grep "$host" exclude) ]]; then #Is this ip in our range off limits?
+        echo "$host" >> nmap/Nessus #ip is safe
+      else
+        echo "Skipping $host"
+      fi
+    done < nmap/all_hosts/all_hosts
+  else
+    echo "Nessus ready file already exists!"
+    exit 0
+  fi
   [[ -z $1 ]] && cat nmap/Nessus || mv nmap/Nessus nmap/safe_ips #build parallelizable list for nmap
 }
 
@@ -118,8 +128,7 @@ launch()
   elif [[ $1 == "--p" ]]; then
     phase_parse
   elif [[ $1 == "--nbt" ]]; then
-    [[ -z $2 ]] && echo "No ip block specified to scan"; exit 1
-    nbt $2
+    nbt
   elif [[ $1 == "--nessus" ]]; then
     nessus
   else
@@ -130,6 +139,8 @@ launch()
     fi
   fi
 }
-
+BLD_RED=${txtbld}$(tput setaf 1) # red
+BLD_TEA=${txtbld}$(tput setaf 6) # teal
+TXT_RST=$(tput sgr0)             # Reset
 launch $1 $2
 fixallthethings

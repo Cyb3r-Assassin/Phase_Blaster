@@ -73,6 +73,11 @@ nessus()  #Serve dual functions to build safe Nessus list or build parallelizabl
   [[ -z $1 ]] && cat nmap/Nessus || mv nmap/Nessus nmap/safe_ips #build parallelizable list for nmap
 }
 
+nikto()
+{
+  while IFS=$'\n' read -r host; do nikto -p 80,443 -h "${host}"; done <<< nmap/safe_ips >> nikto 2>&1
+}
+
 scanallthethings()
 {
   if [[ $1 != "-f" ]]; then
@@ -104,6 +109,7 @@ launch()
 #    echo -e "--p to parse the nmap output into readable format"
     echo -e "--npt to run a netbios host discovery against the ips file"
     echo -e "--nessus to generate an import file of only approved IP addressed from a host discovery for nessus scanning"
+    echo -e "Use --nikto to run nikto on ports 80,443 for hosts in the safe_ip list. In other words only on hosts that have been validated alive and in scope"
   elif [[ $1 == "-bc" ]]; then
     BtoC $2
   elif [[ $1 == "-f" ]]; then # Add the function to use ip's submitted via CLI back in and not just the IPS file
@@ -131,6 +137,8 @@ launch()
     nbt
   elif [[ $1 == "--nessus" ]]; then
     nessus
+  elif [[ $1 == "--nikto" ]]; then
+    nikto
   else
     if [[ $1 == [0-9] || $2 == [0-9] ]]; then
       [[ $1 != "--nmap" ]] && discovery $1 || discovery $2

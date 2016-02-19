@@ -1,4 +1,4 @@
-.14 Fixed --nbt, added Phase_Parse back in <--p> and added colored outputs.
+.14 Fixed --nbt, added Phase_Parse back in <--p> and added colored outputs. Added Nikto to scan approved hosts.
 .13 Fundamental rewrite to utilize parallel processing of scans. Parse option is gone at this time until a new way is developed to handle the new output format..12 Added individual ip and CID discovery scanning from CLI. Adjusted launch interpretation logic to prevent user from frustrated results with malformed inputs.
 .11 bug fixes
 .9 Cleaned Phase_Blaster -p output up a little bit more.

@@ -4,10 +4,10 @@ fixallthethings()
 {
   ID=$(echo $USER)
   echo -e "\n" #Improve readability
+  [[ -d nmap ]] && echo "Setting permissions back to user"; sudo chown -R $ID:$ID nmap
   echo "Doing clean up"
   [[ -e nmap/all_hosts/msf/.nmap ]] && rm nmap/all_hosts/msf/.nmap
   [[ -e nmap/all_hosts/msf/.gnmap ]] && rm nmap/all_hosts/msf/.gnmap
-  [[ -d nmap ]] && echo "Setting permissions back to user"; sudo chown -R $ID:$ID nmap
   exit 0
 }
 

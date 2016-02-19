@@ -4,7 +4,7 @@
 
 **About**
 
-Phase_Blaster takes ip CID blocks, Host Names, and or IP's from a file or directly from CLI and performs large scale host discovery and follows through with available hosts aggressive scans while avoiding any IP's clients deem out of scope via an exclude file. Phase_Blaster then produces xml output for Metasploit DB integration. All results are placed in a managed hierarchical directory tree. The all_hosts file can be used for Nessus importing or can be created on the fly with -nessus option. Phase_Blaster can also convert class B ip CID's to an array of class C's for scanning.
+Phase_Blaster takes ip CIDR blocks, Host Names, and or IP's from a file or directly from CLI and performs large scale host discovery and follows through with available hosts aggressive scans while avoiding any IP's clients deem out of scope via an exclude file. Phase_Blaster then produces xml output for Metasploit DB integration. All results are placed in a file named results. The nessus file from using option --nessus can be used for Nessus host importing. Phase_Blaster can also convert class B ip CID's to an array of class C's for scanning. More indepth pentesting options are available with options --p to review the scanned results in a friends IP/Open Ports manner. In addition --nikto and --nbt uses the safe_ip file to launch nikto on ports 80,443 and populate results into a file named nikto where --nbt runs an nbtscan against any CIDR block host ranges in the ips file.
 
 Phase_Blaster directory structure looks like.
 
@@ -12,19 +12,10 @@ application_dir/
 
 application_dir/nmap
 
-application_dir/nmap/host_cid
-
-application_dir/nmap/host_cid/ip "one file per ip"
-
-application_dir/nmap/host_cid/msf/host.xml
-
-Or with ping sweep enumerations and resumable port scans. This option includes an all_hosts file that can be imported for Nessus.
-
-application_dir/
-
 application_dir/nmap/all_hosts/
 
-application_dir/nmap/all_hosts/msf/host.xml
+application_dir/nmap/all_hosts/msf/
+
 
 **USEAGE:**
 Create 2 files in the same directory you have Phase_blaster residing in, one named "ips" the other "exclude". Place all of your ip ranges separated via line breaks into the ips file. 
@@ -76,9 +67,6 @@ For middle recon work use Phase_blaster -p and Phase_Blaster -nbt. Phase_Blaster
 
 I suggest the command
 
->./Phase_Blaster -bc 10.10. && ./Phase_blaster -df && ./Phase_Blaster -nbt && ./Phase_Blaster -p
-
-##You must edit line 22 of Phase_Blaster to use your default user name before running Phase_Blaster if you do not run as root user
-
+>./Phase_Blaster -bc 10.10. && ./Phase_blaster -df && ./Phase_Blaster -p
 
 Happy Hacking!

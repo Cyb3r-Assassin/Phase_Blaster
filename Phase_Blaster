@@ -217,6 +217,7 @@ launch()
 			if [[ -z $(locate ipsearch.py) ]]; then
 				wget https://bitbucket.org/holiman/ipsearch/get/7df3ff286ba2.zip
 				unzip 7df3ff286ba2.zip
+				rm 7df3ff286ba2.zip
 				mkdir /usr/lib64/ipsearch
 				mv holiman-ipsearch-7df3ff286ba2/ipsearch.py /usr/lib64/ipsearch/
 				rm -r holiman-ipsearch-7df3ff286ba2

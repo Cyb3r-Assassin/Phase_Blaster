@@ -7,7 +7,7 @@ fixallthethings() #Set permissions and clean up
 	[[ -d nmap ]] && echo "Setting permissions back to user"; sudo chown -R $ID:$ID nmap
 	echo "Doing clean up"
 	[[ -e nmap/all_hosts/msf/.nmap ]] && rm nmap/all_hosts/msf/.nmap
-	[[ -e nmap/all_hosts/msf/.gnmap ]] && rm nmap/all_hosts/msf/.gnmap
+	#[[ -e nmap/all_hosts/msf/.gnmap ]] && rm nmap/all_hosts/msf/.gnmap
 	exit 0
 }
 
@@ -38,8 +38,8 @@ phase_parse() #Show the IP of host and only open services and ports for it.
 nbt()
 {
 	while read -r line; do
-		[[ -n "$line" ]] && sudo nbtscan -r "$line"
-	done < <(grep "/" ips)
+		[[ -n "$line" ]] && sudo nbtscan "$line"
+	done < ips #<(grep "/" ips)
 }
 
 discovery() #Process string for discovering if whe use file ips or if an ip set was passed as $2 on the CLI
@@ -71,31 +71,50 @@ nessus()  #Build safe Nessus list
 
 screenshots()
 {
-        if [[ -z $(ls -1 *.png | grep "No") ]]; then #Check if we have any web page screen shots first.
+  if [[ -z $(ls -1 *.png | grep "No") ]]; then #Check if we have any web page screen shots first.
 		echo "" >> screenshots.html
 		printf "<HTML><BODY><BR>" >> screenshots.html
 		ls -1 *.png | awk -F : '{ print $1":"$2"\n<BR><IMG SRC=\""$1"%3A"$2"\" width=400><BR><BR>"}' >> screenshots.html
 		printf "</BODY></HTML>" >> screenshots.html
 		[[ ! -d screenshots ]] && mkdir screenshots
 		[[ -e screenshots.html ]] && mv screenshots.html *.png -t screenshots/
-        fi
+  fi
+}
+
+eyewitness()
+{
+	python2 /usr/bin/EyeWitness --all-protocols -f nmap/all_hosts/msf/ewoks.xml -d Power_of_the_dark-side --no-dns #take right from nmap
+	
+	echo -e "Scanning for Virtual hosts\n"
+	while read line; do
+		echo "$line" | python2 /usr/bin/ipsearch -b bing_key | awk '{ print $3 }' >> nmap/all_hosts/vhosts
+	done < ips
+	echo -e "Your Vhost list is:\n"
+	cat nmap/all_hosts/vhosts
+
+	echo "Now running a screen capture on your Vhosts"
+	python2 /usr/bin/EyeWitness --all-protocols -f nmap/all_hosts/vhosts -d New_Hope --no-dns #take right from nmap
 }
 
 scanallthethings() #Scan from file
 {
 	if [[ $1 == "-df" || $1 == "-ff" ]]; then
 		file="nmap/all_hosts/all_hosts"
-		echo "There is currently a unresolvable bug in nmap on some systems resolving FQDN's. Setting target file back to ips"; file="ips" #work around nmap bug until further notice
+		#Verified bug exists in nmap versions >=7.01
+		#echo "There is currently a unresolvable bug in nmap on some systems resolving FQDN's. Setting target file back to ips"; file="ips" #work around nmap bug until further notice
 		echo "Working... This could be a while."
-		sudo nmap ${NMAP_VAL} -iL $file --excludefile exclude -oA nmap/all_hosts/msf/ --script=default,http-screenshot >> nmap/all_hosts/results #Scan the ip, drop results into file nmap/all_hosts/$host and the MSF file into nmap/all_hosts/msf/$host
+		#sudo nmap ${NMAP_VAL} -iL $file --excludefile exclude -oA nmap/all_hosts/msf/ --script=default,http-screenshot >> nmap/all_hosts/results #Scan the ip, drop results into file nmap/all_hosts/$host and the MSF file into nmap/all_hosts/msf/$host
+		sudo nmap ${NMAP_VAL} -iL $file --excludefile exclude -oA nmap/all_hosts/msf/ewoks >> nmap/all_hosts/results #Scan the ip, drop results into file nmap/all_hosts/$host and the MSF file into nmap/all_hosts/msf/$host
 	elif [[ $1 == "ips" ]]; then
 		file="ips"
 		echo "Working... This could be a while."
-		sudo nmap ${NMAP_VAL} -iL $file --excludefile exclude -oA nmap/all_hosts/msf/ --script=default,http-screenshot >> nmap/all_hosts/results #Scan the ip, drop results into file nmap/all_hosts/$host and the MSF file into nmap/all_hosts/msf/$host
+		#sudo nmap ${NMAP_VAL} -iL $file --excludefile exclude -oA nmap/all_hosts/msf/ --script=default,http-screenshot >> nmap/all_hosts/results #Scan the ip, drop results into file nmap/all_hosts/$host and the MSF file into nmap/all_hosts/msf/$host
+		sudo nmap ${NMAP_VAL} -oA nmap/all_hosts/msf/ewoks -iL $file >> nmap/all_hosts/results #Scan the ip, drop results into file nmap/all_hosts/$host and the MSF file into nmap/all_hosts/msf/$host
 	else
 		file="$1"
 		echo "Working... This could be a while."
-		sudo nmap ${NMAP_VAL} $file --excludefile exclude -oA nmap/all_hosts/msf/ --script=default,http-screenshot >> nmap/all_hosts/results #Scan the ip, drop results into file nmap/all_hosts/$host and the MSF file into nmap/all_hosts/msf/$host
+		#sudo nmap ${NMAP_VAL} $file --excludefile exclude -oA nmap/all_hosts/msf/ --script=default,http-screenshot >> nmap/all_hosts/results #Scan the ip, drop results into file nmap/all_hosts/$host and the MSF file into nmap/all_hosts/msf/$host
+		sudo nmap ${NMAP_VAL} $file --excludefile exclude -oA nmap/all_hosts/msf/ewoks >> nmap/all_hosts/results #Scan the ip, drop results into file nmap/all_hosts/$host and the MSF file into nmap/all_hosts/msf/$host
 	fi
 	cat nmap/all_hosts/results
 }
@@ -122,12 +141,13 @@ launch()
 		echo "--nbt to run a netbios host discovery against the ips file"
 		echo "--nessus to generate an import file of only approved IP addressed from a host discovery for nessus scanning"
 		#echo "Use --nikto to run nikto on ports 80,443 for hosts in the safe_ip list. In other words only on hosts that have been validated alive and in scope"
-		echo "This script uses nmap scripting. Consider running <nmap --script-updatedb>"
+		echo "This script uses nmap scripting. Consider running PhaseBlaster with <-u>"
 	elif [[ $1 == "-bc" ]]; then
 		BtoC $2
 	elif [[ $1 == "-f" ]]; then
 		scanallthethings ips
-		screenshots
+		eyewitness
+		#screenshots
 	elif [[ $1 == "-d" ]]; then
 		if [[ -z $2 && $2 != "--nmap" ]]; then
 			discovery
@@ -141,10 +161,12 @@ launch()
 	elif [[ $1 == "-df" || $1 == "-fd"  ]]; then
 		discovery
 		scanallthethings -df
-		screenshots
+		eyewitness
+		#screenshots
 	elif [[ $1 == "-ff" ]]; then
 		scanallthethings -ff
-		screenshots
+		eyewitness
+		#screenshots
 	elif [[ $1 == "--parse" ]]; then
 		phase_parse
 	elif [[ $1 == "--nbt" ]]; then
@@ -154,30 +176,62 @@ launch()
 	#elif [[ $1 == "--nikto" ]]; then
 	#	nikto
 	elif [[ $1 == "-u" ]]; then
-		if [[ ! -e /usr/local/bin/wkhtmltoimage-i386 ]]; then
-			wget http://wkhtmltopdf.googlecode.com/files/wkhtmltoimage-0.11.0_rc1-static-i386.tar.bz2
-			tar -jxvf wkhtmltoimage-0.11.0_rc1-static-i386.tar.bz2
-			sudo mv wkhtmltoimage-i386 /usr/local/bin/
-			rm wkhtmltoimage-0.11.0_rc1-static-i386.tar.bz2
+		#if [[ ! -e /usr/local/bin/wkhtmltoimage-i386 ]]; then
+		#	wget http://wkhtmltopdf.googlecode.com/files/wkhtmltoimage-0.11.0_rc1-static-i386.tar.bz2
+		#	tar -jxvf wkhtmltoimage-0.11.0_rc1-static-i386.tar.bz2
+		#	sudo mv wkhtmltoimage-i386 /usr/local/bin/
+		#	rm wkhtmltoimage-0.11.0_rc1-static-i386.tar.bz2
+		#fi
+
+		#if [[ -e http-screenshot.nse ]]; then
+		#	if [[ -d /usr/share/nmap/scripts ]]; then
+		#		sudo mv *.nse /usr/share/nmap/scripts
+		#	elif [[ -d /usr/local/share/nmap/scripts ]]; then
+		#		sudo mv *.nse /usr/local/share/nmap/scripts
+		#	else
+		#		echo "Do you have nmap installed?"
+		#		exit 0
+		#	fi
+		#	sudo nmap --script-updatedb
+		#else
+		#	sudo nmap --script-updatedb
+		#fi
+
+		if [[ $(ls bing_key) != "bing_key" ]]; then #get the bing api key
+			read -p "You need a bing api key. If you do not have one you can get one at https://datamarket.azure.com/dataset/bing/search$ Now please enter your api key: " key
+			echo "$key" > bing_key
 		fi
 
-		if [[ -e http-screenshot.nse ]]; then
-			if [[ -d /usr/share/nmap/scripts ]]; then
-				sudo mv *.nse /usr/share/nmap/scripts
-			elif [[ -d /usr/local/share/nmap/scripts ]]; then
-				sudo mv *.nse /usr/local/share/nmap/scripts
+		if [[ -n $(uname -r | grep kali) ]]; then
+			#check it we have the ipsearch.py script installed and setup the system
+			if [[ -z $(locate ipsearch.py) ]]; then
+				wget https://bitbucket.org/holiman/ipsearch/get/7df3ff286ba2.zip
+				unzip 7df3ff286ba2.zip
+				mkdir /usr/lib64/ipsearch
+				mv holiman-ipsearch-7df3ff286ba2/ipsearch.py /usr/lib64/ipsearch/
+				rm -r holiman-ipsearch-7df3ff286ba2
+				ln -s /usr/lib64/ipsearch/ipsearch.py /usr/bin/ipsearch
 			else
-				echo "Do you have nmap installed?"
-				exit 0
+				ln -s $(locate ipsearch.py) /usr/bin/ipsearch
 			fi
-			sudo nmap --script-updatedb
+		
+			#Setup for EyeWitness
+			if [[ -z $(ls /usr/share/eyewitness/EyeWitness.py) ]]; then
+				ln -s /usr/share/eyewitness/EyeWitness.py /usr/bin/eyewitness
+			else
+				sudo apt-get install eyewitness
+				ln -s /usr/share/eyewitness/EyeWitness.py /usr/bin/eyewitness
+			fi
 		else
-			sudo nmap --script-updatedb
+			#Manually add some stuff for gentoo later until then you should be smart enough to figure it out on your own if you're using Gentoo.
 		fi
-	else
+	else #Scan using IP's passed right on command line
 		if [[ $1 =~ [0-9] || $2 =~ [0-9] || $1 =~ [a-z] || $2 =~ [a-z] ]]; then
 			[[ $1 != "--nmap" ]] && scanallthethings $1 || scanallthethings $2
-			screenshots
+			eyewitness
+			#screenshots
+		else
+			launch --help
 		fi
 	fi
 }

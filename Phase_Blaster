@@ -213,7 +213,7 @@ launch()
 				rm -r holiman-ipsearch-7df3ff286ba2
 				ln -s /usr/lib64/ipsearch/ipsearch.py /usr/bin/ipsearch
 				updatedb
-			else
+			elif [[ !-f /usr/bin/ipsearch ]]; then
 				ln -s $(locate ipsearch.py) /usr/bin/ipsearch
 			fi
 		

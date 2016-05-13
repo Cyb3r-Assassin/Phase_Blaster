@@ -217,10 +217,7 @@ launch()
 		
 			#Setup for EyeWitness
 			if [[ -z $(ls /usr/share/eyewitness/EyeWitness.py) ]]; then
-				ln -s /usr/share/eyewitness/EyeWitness.py /usr/bin/eyewitness
-			else
 				sudo apt-get install eyewitness
-				ln -s /usr/share/eyewitness/EyeWitness.py /usr/bin/eyewitness
 			fi
 		else
 			launch --help

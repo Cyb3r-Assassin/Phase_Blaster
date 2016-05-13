@@ -223,6 +223,7 @@ launch()
 				ln -s /usr/share/eyewitness/EyeWitness.py /usr/bin/eyewitness
 			fi
 		else
+			launch --help
 			#Manually add some stuff for gentoo later until then you should be smart enough to figure it out on your own if you're using Gentoo.
 		fi
 	else #Scan using IP's passed right on command line

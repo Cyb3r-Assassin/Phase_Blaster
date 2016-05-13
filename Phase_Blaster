@@ -204,6 +204,7 @@ launch()
 
 		if [[ -n $(uname -r | grep kali) ]]; then
 			#check it we have the ipsearch.py script installed and setup the system
+			updatedb
 			if [[ -z $(locate ipsearch.py) ]]; then
 				wget https://bitbucket.org/holiman/ipsearch/get/7df3ff286ba2.zip
 				unzip 7df3ff286ba2.zip
@@ -211,6 +212,7 @@ launch()
 				mv holiman-ipsearch-7df3ff286ba2/ipsearch.py /usr/lib64/ipsearch/
 				rm -r holiman-ipsearch-7df3ff286ba2
 				ln -s /usr/lib64/ipsearch/ipsearch.py /usr/bin/ipsearch
+				updatedb
 			else
 				ln -s $(locate ipsearch.py) /usr/bin/ipsearch
 			fi

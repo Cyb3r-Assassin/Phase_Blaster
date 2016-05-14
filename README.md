@@ -4,7 +4,7 @@
 
 **About**
 
-Phase_Blaster takes ip CIDR blocks, Host Names, and or IP's from a file or directly from CLI and performs large scale host discovery and follows through with available hosts aggressive scans or user defined options while avoiding any IP's clients deem out of scope via an exclude file. Phase_Blaster then produces xml output for Metasploit DB integration. All results are placed in a file named results. If any host shows a web service available the host is documented and a screenshot of the service is taken.
+Phase_Blaster takes ip CIDR blocks, Host Names, and or IP's from a file or directly from CLI and performs large scale host discovery and follows through with available hosts aggressive scans or user defined options while avoiding any IP's clients deem out of scope via an exclude file. Phase_Blaster then produces xml output for Metasploit DB integration. All results are placed in a file named results. The user can pass their own nmap commands to meet special needs and a bing api key is used to search all of the ips in our target file to enumerate virtual host FDQN's. If any host shows a web service, VNC, or RDP service available the host is documented and a screenshot of the service is taken.
 
 The nessus file from using option --nessus can be used for Nessus host importing. Phase_Blaster can also convert class B ip CID's to an array of class C's for scanning. More indepth pentesting options are available with options --parse to review the scanned results in a friends IP/Open Ports manner. In addition --nbt runs a nbtscan against any CIDR block host ranges in the ips file.
 
@@ -25,13 +25,13 @@ Any ip's you need excluded from the scans in the exclude file in the same manner
 
 **call phase_blaster as follows**
 
->./Phase_Blaster.sh -f
+>./Phase_Blaster -f
 
 **Phase_blaster also allows individual ip entries at any point and adds them into the directory structure and produces a new msf ready xml file.**
 
 if you need to run just one new entry do so as
 
->./Phase_Blaster.sh 0.0.0.0/24
+>./Phase_Blaster 0.0.0.0/24
 
 or
 
@@ -44,7 +44,7 @@ Converting a class B range CID and converts it into class C and dumps the output
 
 **call phase_blaster as follows**
 
->./Phase_Blaster.sh -bc 127.0.
+>./Phase_Blaster -bc 127.0.
 
 **Output**
 The results would look like

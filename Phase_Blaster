@@ -207,7 +207,7 @@ launch()
 		#fi
 
 		if [[ $(ls bing_key) != "bing_key" ]]; then #get the bing api key
-			read -p "You need a bing api key. If you do not have one you can get one at https://datamarket.azure.com/dataset/bing/search$ Now please enter your api key: " key
+			read -p "You need a bing api key. If you do not have one you can get one at https://datamarket.azure.com/dataset/bing/search Now please enter your api key: " key
 			echo "$key" > bing_key
 		fi
 
@@ -235,6 +235,7 @@ launch()
 			launch --help
 			#Manually add some stuff for gentoo later until then you should be smart enough to figure it out on your own if you're using Gentoo.
 		fi
+		echo "Application is up to date. Happy Hacking!"
 	else #Scan using IP's passed right on command line
 		if [[ $1 =~ [0-9] || $2 =~ [0-9] || $1 =~ [a-z] || $2 =~ [a-z] ]]; then
 			build_dir

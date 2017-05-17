@@ -53,7 +53,7 @@ nbt()
 	done < ips #<(grep "/" ips)
 }
 
-discovery() #Process string for discovering if whe use file ips or if an ip set was passed as $2 on the CLI
+discovery() #Process string for discovering if we use file ips or if an ip set was passed as $2 on the CLI
 {
 	if [[ -z $1 ]]; then
 		nmap -sn -iL ips | grep -i report | awk -F"for" '{ print $2 }' | cut -d' ' -f2 >> nmap/all_hosts/all_hosts
@@ -95,13 +95,14 @@ screenshots()
 eyewitness()
 {
 	python2 /usr/bin/EyeWitness --all-protocols -f nmap/all_hosts/msf/ewoks.xml -d Power_of_the_dark-side --no-dns #take right from nmap
-	
-	echo -e "Scanning for Virtual hosts\n"
-	while read line; do
-		echo "$line" | python2 /usr/bin/ipsearch -b bing_key | awk '{ print $3 }' >> nmap/all_hosts/vhosts
-	done < ips
-	echo -e "Your Vhost list is:\n"
-	cat nmap/all_hosts/vhosts
+
+    #This feature has been broken due to bing depricating the api key, fix this some day
+	#echo -e "Scanning for Virtual hosts\n"
+	#while read line; do
+#		echo "$line" | python2 /usr/bin/ipsearch -b bing_key | awk '{ print $3 }' >> nmap/all_hosts/vhosts
+#	done < ips
+#	echo -e "Your Vhost list is:\n"
+#	cat nmap/all_hosts/vhosts
 
 	echo "Now running a screen capture on your Vhosts"
 	python2 /usr/bin/EyeWitness --all-protocols -f nmap/all_hosts/vhosts -d New_Hope --no-dns #take right from nmap
@@ -154,7 +155,7 @@ launch()
 	elif [[ $1 == "-f" ]]; then
 		build_dir
 		scanallthethings ips
-		eyewitness
+		#eyewitness
 		#screenshots
 	elif [[ $1 == "-d" ]]; then
 		if [[ -z $2 && $2 != "--nmap" ]]; then
@@ -171,12 +172,12 @@ launch()
 		build_dir
 		discovery
 		scanallthethings -df
-		eyewitness
+		#eyewitness
 		#screenshots
 	elif [[ $1 == "-ff" ]]; then
 		build_dir
 		scanallthethings -ff
-		eyewitness
+		#eyewitness
 		#screenshots
 	elif [[ $1 == "--parse" ]]; then
 		phase_parse
@@ -226,7 +227,7 @@ launch()
 			elif [[ ! -f /usr/bin/ipsearch ]]; then
 				ln -s $(locate ipsearch.py) /usr/bin/ipsearch
 			fi
-		
+
 			#Setup for EyeWitness
 			if [[ -z $(ls /usr/share/eyewitness/EyeWitness.py) ]]; then
 				sudo apt-get install eyewitness
@@ -237,12 +238,14 @@ launch()
 		fi
 		echo "Application is up to date. Happy Hacking!"
 	else #Scan using IP's passed right on command line
+		echo "DEBUG, We are in the right function"
 		if [[ $1 =~ [0-9] || $2 =~ [0-9] || $1 =~ [a-z] || $2 =~ [a-z] ]]; then
 			build_dir
 			[[ $1 != "--nmap" ]] && scanallthethings $1 || scanallthethings $2
 			eyewitness
 			#screenshots
 		else
+			echo "DEBUG, We are in the right statement"
 			launch --help
 		fi
 	fi

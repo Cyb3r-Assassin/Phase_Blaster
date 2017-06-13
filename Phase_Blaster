@@ -82,30 +82,34 @@ nessus()  #Build safe Nessus list
 
 screenshots()
 {
-  if [[ -z $(ls -1 *.png | grep "No") ]]; then #Check if we have any web page screen shots first.
-		echo "" >> screenshots.html
-		printf "<HTML><BODY><BR>" >> screenshots.html
-		ls -1 *.png | awk -F : '{ print $1":"$2"\n<BR><IMG SRC=\""$1"%3A"$2"\" width=400><BR><BR>"}' >> screenshots.html
-		printf "</BODY></HTML>" >> screenshots.html
-		[[ ! -d screenshots ]] && mkdir screenshots
-		[[ -e screenshots.html ]] && mv screenshots.html *.png -t screenshots/
-  fi
+  #if [[ -z $(ls -1 *.png | grep "No") ]]; then #Check if we have any web page screen shots first.
+#		echo "" >> screenshots.html
+#		printf "<HTML><BODY><BR>" >> screenshots.html
+#		ls -1 *.png | awk -F : '{ print $1":"$2"\n<BR><IMG SRC=\""$1"%3A"$2"\" width=400><BR><BR>"}' >> screenshots.html
+#		printf "</BODY></HTML>" >> screenshots.html
+ #       if [[ -e screenshots.html ]]; then
+  #        if [[ ! -d screenshots ]]; then
+   #             mkdir screenshots
+    #        fi
+     #       mv screenshots.html *.png -t screenshots/
+      #  fi
+  #fi
 }
 
 eyewitness()
 {
-	python2 /usr/bin/EyeWitness --all-protocols -f nmap/all_hosts/msf/ewoks.xml -d Power_of_the_dark-side --no-dns #take right from nmap
+	python2 /usr/sbin/EyeWitness --all-protocols -f nmap/all_hosts/msf/ewoks.xml -d Power_of_the_dark-side --no-dns #take right from nmap
 
     #This feature has been broken due to bing depricating the api key, fix this some day
 	#echo -e "Scanning for Virtual hosts\n"
 	#while read line; do
-#		echo "$line" | python2 /usr/bin/ipsearch -b bing_key | awk '{ print $3 }' >> nmap/all_hosts/vhosts
+#	echo "$line" | python2 /usr/bin/ipsearch -b bing_key | awk '{ print $3 }' >> nmap/all_hosts/vhosts
 #	done < ips
 #	echo -e "Your Vhost list is:\n"
 #	cat nmap/all_hosts/vhosts
 
-	echo "Now running a screen capture on your Vhosts"
-	python2 /usr/bin/EyeWitness --all-protocols -f nmap/all_hosts/vhosts -d New_Hope --no-dns #take right from nmap
+	#echo "Now running a screen capture on your Vhosts"
+	#python2 /usr/sbin/EyeWitness --all-protocols -f nmap/all_hosts/vhosts -d New_Hope --no-dns #take right from nmap
 }
 
 scanallthethings() #Scan from file
@@ -115,7 +119,7 @@ scanallthethings() #Scan from file
 		#Verified bug exists in nmap versions >=7.01
 		#echo "There is currently a unresolvable bug in nmap on some systems resolving FQDN's. Setting target file back to ips"; file="ips" #work around nmap bug until further notice
 		echo "Working... This could be a while."
-		#sudo nmap ${NMAP_VAL} -iL $file --excludefile exclude -oA nmap/all_hosts/msf/ --script=default,http-screenshot >> nmap/all_hosts/results #Scan the ip, drop results into file nmap/all_hosts/$host and the MSF file into nmap/all_hosts/msf/$host
+		#sudo nmap ${NMAP_VAL} -iL $file --excludefile exclude -oA nmap/all_hosts/msf/ --script=default,http-screenshot >> nmap/all_hosts/results #Scan the ip, drop results into file nmap/  all_hosts/$host and the MSF file into nmap/all_hosts/msf/$host
 		sudo nmap ${NMAP_VAL} -iL $file --excludefile exclude -oA nmap/all_hosts/msf/ewoks >> nmap/all_hosts/results #Scan the ip, drop results into file nmap/all_hosts/$host and the MSF file into nmap/all_hosts/msf/$host
 	elif [[ $1 == "ips" ]]; then
 		file="ips"
@@ -155,7 +159,7 @@ launch()
 	elif [[ $1 == "-f" ]]; then
 		build_dir
 		scanallthethings ips
-		#eyewitness
+		eyewitness
 		#screenshots
 	elif [[ $1 == "-d" ]]; then
 		if [[ -z $2 && $2 != "--nmap" ]]; then
@@ -172,12 +176,12 @@ launch()
 		build_dir
 		discovery
 		scanallthethings -df
-		#eyewitness
+		eyewitness
 		#screenshots
 	elif [[ $1 == "-ff" ]]; then
 		build_dir
 		scanallthethings -ff
-		#eyewitness
+		eyewitness
 		#screenshots
 	elif [[ $1 == "--parse" ]]; then
 		phase_parse
@@ -186,6 +190,7 @@ launch()
 	elif [[ $1 == "--nessus" ]]; then
 		nessus
 	elif [[ $1 == "-u" ]]; then
+		#This method has been replaced by EyeWitness.
 		#if [[ ! -e /usr/local/bin/wkhtmltoimage-i386 ]]; then
 		#	wget http://wkhtmltopdf.googlecode.com/files/wkhtmltoimage-0.11.0_rc1-static-i386.tar.bz2
 		#	tar -jxvf wkhtmltoimage-0.11.0_rc1-static-i386.tar.bz2
@@ -201,32 +206,34 @@ launch()
 		#	else
 		#		echo "Do you have nmap installed?"
 		#		exit 0
-		#	fi
-		#	sudo nmap --script-updatedb
-		#else
-		#	sudo nmap --script-updatedb
-		#fi
-
-		if [[ $(ls bing_key) != "bing_key" ]]; then #get the bing api key
-			read -p "You need a bing api key. If you do not have one you can get one at https://datamarket.azure.com/dataset/bing/search Now please enter your api key: " key
-			echo "$key" > bing_key
+         #   fi
+			sudo nmap --script-updatedb
+		else
+			sudo nmap --script-updatedb
 		fi
+
+		#This has depricated by Bing 12-30-2016.
+		#if [[ $(ls bing_key) != "bing_key" ]]; then #get the bing api key
+		#	read -p "You need a bing api key. If you do not have one you can get one at https://datamarket.azure.com/dataset/bing/search Now please enter your api key: " key
+		#	echo "$key" > bing_key
+		#fi
 
 		if [[ -n $(uname -r | grep kali) ]]; then
 			#check it we have the ipsearch.py script installed and setup the system
 			updatedb
-			if [[ -z $(locate ipsearch.py) ]]; then
-				wget https://bitbucket.org/holiman/ipsearch/get/7df3ff286ba2.zip
-				unzip 7df3ff286ba2.zip
-				rm 7df3ff286ba2.zip
-				mkdir /usr/lib64/ipsearch
-				mv holiman-ipsearch-7df3ff286ba2/ipsearch.py /usr/lib64/ipsearch/
-				rm -r holiman-ipsearch-7df3ff286ba2
-				ln -s /usr/lib64/ipsearch/ipsearch.py /usr/bin/ipsearch
-				updatedb
-			elif [[ ! -f /usr/bin/ipsearch ]]; then
-				ln -s $(locate ipsearch.py) /usr/bin/ipsearch
-			fi
+			#This has depricated by Bing 12-30-2016.
+			#if [[ -z $(locate ipsearch.py) ]]; then
+			#	wget https://bitbucket.org/holiman/ipsearch/get/7df3ff286ba2.zip
+			#	unzip 7df3ff286ba2.zip
+			#	rm 7df3ff286ba2.zip
+			#	mkdir /usr/lib64/ipsearch
+			#	mv holiman-ipsearch-7df3ff286ba2/ipsearch.py /usr/lib64/ipsearch/
+			#	rm -r holiman-ipsearch-7df3ff286ba2
+			#	ln -s /usr/lib64/ipsearch/ipsearch.py /usr/bin/ipsearch
+			#	updatedb
+			#elif [[ ! -f /usr/bin/ipsearch ]]; then
+			#	ln -s $(locate ipsearch.py) /usr/bin/ipsearch
+			#fi
 
 			#Setup for EyeWitness
 			if [[ -z $(ls /usr/share/eyewitness/EyeWitness.py) ]]; then

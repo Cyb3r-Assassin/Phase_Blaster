@@ -1,3 +1,4 @@
+.18 I forget, things like Eyewitness functionality brought back, ipsearch depricated due to bing. Other goodies
 .17 removed ambiguouse $ sign at the end of the url link to download api key
 .16 Removed NSE scripts for nmap. found the nmap bug and adjusted the hosts file back to allhosts. Added eyewitness and ipsearch.py for vhosts. fixed ambiguouse flag handling. Created install scrits for Kali users by running -u
 .15 Moved parse option from --p to --parse. Removed Nikto option due to unavoidable bugs and limitations. Changed the shared scanning logic issues that were created from parallel scanning additions. IPs passed on CMD no longer processes through ping discovery. Discovery no longer processes through exclude file. Nmap scan uses native exclude operands. nmap temporarily always pulls from ips file and not host discovered file due to bug in nmaps rDNS lookup from FQDN on some systems.
